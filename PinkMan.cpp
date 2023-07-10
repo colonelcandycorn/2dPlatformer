@@ -27,6 +27,8 @@ PinkMan::~PinkMan() {
 void PinkMan::init(AssetManager* asset_manager) {
     textures[IDLE] = asset_manager->get_texture("pink_idle");
     textures[RUNNING] = asset_manager->get_texture("pink_running");
+    textures[JUMPING] = asset_manager->get_texture("pink_jumping");
+    textures[FALLING] = asset_manager->get_texture("pink_falling");
 
     state = new PinkManIdleState();
 
@@ -62,7 +64,21 @@ void PinkMan::process_input(SDL_Event event)
     {
         delete state;
         state = temp;
+
+        state->enter(*this);
     }
+}
+
+void PinkMan::update_state(PinkManState *a_state)
+{
+    if (state != nullptr)
+    {
+        delete this->state;
+        state = a_state;
+
+        state->enter(*this);
+    }
+    return;
 }
 
 void PinkMan::update_position(Uint64 deltaTime)

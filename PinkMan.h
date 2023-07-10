@@ -9,14 +9,22 @@
 
 enum texture_type {
     IDLE,
-    RUNNING
+    RUNNING,
+    JUMPING,
+    FALLING
 };
 
+const int TEXT_COUNT = 4;
+const int GRAVITY = 83;
+const int JUMP_VELOCITY = -1000 ;
 
 const int IDLE_FRAMES = 11;
 const int RUNNING_FRAMES = 12;
 const int PINKMAN_WIDTH = 32;
 const int PINKMAN_HEIGHT = 32;
+const int JUMPING_FRAMES = 1;
+const int FALLING_FRAMES = 1;
+
 
 class AssetManager;
 class PinkManState;
@@ -38,6 +46,7 @@ public:
     glm::vec2& get_velocity();
     void set_flip_flag(SDL_RendererFlip flag);
     void update_texture(texture_type type);
+    void update_state(PinkManState* state);
 
 private:
 
@@ -47,7 +56,7 @@ private:
     glm::vec2 velocity;
     SDL_Rect srcRect, destRect;
 
-    SDL_Texture* textures[2];
+    SDL_Texture* textures[TEXT_COUNT];
     texture_type current_texture;
     SDL_RendererFlip flip_flag;
     PinkManState* state;

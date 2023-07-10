@@ -41,6 +41,9 @@ void Game::init()
     assetManager->add_texture("pink_idle",
                               "assets/Free/characters/pink_man/idle.png");
     assetManager->add_texture("pink_running","assets/Free/characters/pink_man/running.png");
+    assetManager->add_texture("pink_jumping", "assets/Free/characters/pink_man/jump.png");
+    assetManager->add_texture("pink_falling", "assets/Free/characters/pink_man/fall.png");
+
 
     pinkMan = new PinkMan({windowWidth / 2, windowHeight / 2 }, {1, 1});
     pinkMan->init(assetManager);

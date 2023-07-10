@@ -12,9 +12,10 @@ public:
     virtual ~PinkManState()= default;
     virtual PinkManState* process_input(PinkMan& hero, SDL_Event event)=0;
     virtual void update(PinkMan& hero, Uint64 deltaTime)=0;
+    virtual void enter(PinkMan& hero)=0;
 
-private:
-
+protected:
+    void update_(PinkMan& hero, Uint64 deltaTime, int frames);
 };
 
 class PinkManIdleState : public PinkManState {
@@ -23,6 +24,7 @@ public:
     ~PinkManIdleState() override;
     PinkManState* process_input(PinkMan& hero, SDL_Event event) override;
     void update(PinkMan& hero, Uint64 deltaTime) override;
+    void enter(PinkMan& hero) override;
 };
 
 
@@ -32,6 +34,8 @@ public:
     ~PinkManRightRunningState() override;
     PinkManState* process_input(PinkMan& hero, SDL_Event event) override;
     void update(PinkMan& hero, Uint64 deltaTime) override;
+    void enter(PinkMan& hero) override;
+
 };
 
 class PinkManLeftRunningState : public PinkManState {
@@ -40,15 +44,26 @@ public:
     ~PinkManLeftRunningState() override;
     PinkManState* process_input(PinkMan& hero, SDL_Event event) override;
     void update(PinkMan& hero, Uint64 deltaTime) override;
+    void enter(PinkMan& hero) override;
 };
 
-class PinkManRightJumpingState : public PinkManState {
+class PinkManJumpingState : public PinkManState {
 public:
-    PinkManRightJumpingState()=default;
-    ~PinkManRightJumpingState() override;
+    PinkManJumpingState()=default;
+    ~PinkManJumpingState() override;
     PinkManState* process_input(PinkMan& hero, SDL_Event event) override;
     void update(PinkMan& hero, Uint64 deltaTime) override;
+    void enter(PinkMan& hero) override;
 };
 
+class PinkManFallingState : public PinkManState
+{
+public:
+    PinkManFallingState()=default;
+    ~PinkManFallingState() override;
+    PinkManState* process_input(PinkMan& hero, SDL_Event event) override;
+    void update(PinkMan& hero, Uint64 deltaTime) override;
+    void enter(PinkMan& hero) override;
+};
 
 #endif //PINKMANSTATE_H
