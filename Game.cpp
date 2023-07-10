@@ -37,6 +37,7 @@ void Game::init()
     int windowWidth, windowHeight;
     SDL_GetWindowSize(GraphicsManager::get_window(), &windowWidth, &windowHeight);
 
+    // TODO: Separate this into a function or read from a file to load all assets
     assetManager = new AssetManager();
     assetManager->add_texture("pink_idle",
                               "assets/Free/characters/pink_man/idle.png");
@@ -45,6 +46,8 @@ void Game::init()
     assetManager->add_texture("pink_falling", "assets/Free/characters/pink_man/fall.png");
 
 
+    //TODO: Make PinkMan and AssetManager into smart pointers
+    //TODO: Make PinkMan an entity and abstract it into a class
     pinkMan = new PinkMan({windowWidth / 2, windowHeight / 2 }, {1, 1});
     pinkMan->init(assetManager);
 
@@ -54,6 +57,7 @@ void Game::init()
 /*
  * run()
  *
+ * Runs the game loop.
  *
  */
 
@@ -70,13 +74,16 @@ void Game::run()
 /*
  * process_input()
  *
- * Processes input from the user.
+ * Processes input from the user. Right now it just checks for the escape key/quit,
+ * otherwise it passes the event to PinkMan to handle. This will change as more
+ * entities are added to the game.
  */
 
 void Game::process_input()
 {
     SDL_Event e;
 
+    //TODO: Make this less reliant on PinkMan resolving input
     while (SDL_PollEvent(&e))
     {
         switch (e.type)
@@ -106,10 +113,14 @@ void Game::process_input()
 /*
  * update()
  *
- * Updates the game world.
+ * Updates the game world. Most of my knowledge of this comes from
+ * "Game Programming Patterns" by Robert Nystrom. In his section on the
+ * "Game Loop" he describes the "Fixed Timestep" pattern. This is the
+ * pattern I am using here.
  */
 void Game::update()
 {
+    static Uint64 lag = 0;
     Uint64 time_to_wait = MILLISECONDS_PER_FRAME - (SDL_GetTicks64() - millisecondsPreviousFrame);
 
     if (time_to_wait > 0 && time_to_wait <= MILLISECONDS_PER_FRAME)
@@ -118,11 +129,15 @@ void Game::update()
     }
 
     Uint64 delta_time = (SDL_GetTicks64() - millisecondsPreviousFrame);
+    lag += delta_time;
 
     millisecondsPreviousFrame = SDL_GetTicks64();
 
-
-    pinkMan->update(delta_time);
+    while (lag >= MILLISECONDS_PER_FRAME)
+    {
+        pinkMan->update(MILLISECONDS_PER_FRAME);
+        lag -= MILLISECONDS_PER_FRAME;
+    }
 
 
     return;
@@ -131,7 +146,9 @@ void Game::update()
 /*
  * render()
  *
- * Renders the game world.
+ * Renders the game world. Renderer is cleared, game objects are drawn, and
+ * the renderer is presented. Currently, the renderer is a Singleton, but
+ * I may change this in the future.
  */
 
 void Game::render()
@@ -149,6 +166,9 @@ void Game::render()
  * take_down()
  *
  * Destroys the window and renderer and quits SDL.
+ *
+ * Also deletes the PinkMan and AssetManager. Probably will change this in the
+ * future to use smart pointers.
  */
 void Game::take_down()
 {
