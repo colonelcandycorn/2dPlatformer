@@ -6,7 +6,10 @@ COBJS = main.o \
 		GraphicsManager.o \
 		AssetManager.o \
 		PinkMan.o \
-		PinkManState.o
+		PinkManState.o \
+		Terrain.o \
+		Tile.o \
+		ColliderManager.o \
 INCLUDE_PATH = -I"./libs/"
 TARGETS = main
 LFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
@@ -37,6 +40,16 @@ PinkMan.o: PinkMan.cpp PinkMan.h
 
 PinkManState.o: PinkManState.cpp PinkManState.h
 	$(CC) $(CFLAGS) -c $(<) -o $(@)
+
+Terrain.o: Terrain.cpp Terrain.h
+	$(CC) $(CFLAGS) -c $(<) -o $(@)
+
+Tile.o: Tile.cpp Tile.h
+	$(CC) $(CFLAGS) -c $(<) -o $(@)
+
+ColliderManager.o: ColliderManager.cpp ColliderManager.h
+	$(CC) $(CFLAGS) -c $(<) -o $(@)
+
 
 #CLEAN
 

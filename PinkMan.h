@@ -1,12 +1,14 @@
-//
-// Created by sarah on 7/4/23.
-//
 
 #ifndef PINKMAN_H
 #define PINKMAN_H
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 
+/*
+ * texture_type is an enum that represents the different textures that PinkMan can have.
+ * The various constants below represent the number of frames for each texture, and other
+ * constants that are used in the PinkMan class.
+ */
 enum texture_type {
     IDLE,
     RUNNING,

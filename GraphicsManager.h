@@ -3,8 +3,8 @@
 
 #include <SDL2/SDL.h>
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 640;
+const int WINDOW_HEIGHT = 480;
 
 class GraphicsManager {
 public:
@@ -14,7 +14,7 @@ public:
     static void release();
 
 private:
-    GraphicsManager();
+    GraphicsManager()=default;
 };
 
 

@@ -34,24 +34,40 @@ void Game::init()
         throw runtime_error("Error creating SDL renderer");
     }
 
-    int windowWidth, windowHeight;
-    SDL_GetWindowSize(GraphicsManager::get_window(), &windowWidth, &windowHeight);
+
 
     // TODO: Separate this into a function or read from a file to load all assets
     assetManager = new AssetManager();
+    load_assets();
+
+    //TODO: Make PinkMan and AssetManager into smart pointers
+    //TODO: Make PinkMan an entity and abstract it into a class
+    init_game_objects();
+    isRunning = true;
+}
+
+void Game::load_assets()
+{
     assetManager->add_texture("pink_idle",
                               "assets/Free/characters/pink_man/idle.png");
     assetManager->add_texture("pink_running","assets/Free/characters/pink_man/running.png");
     assetManager->add_texture("pink_jumping", "assets/Free/characters/pink_man/jump.png");
     assetManager->add_texture("pink_falling", "assets/Free/characters/pink_man/fall.png");
+    assetManager->add_texture("terrain", "assets/Free/Terrain/terrain.png");
+}
 
-
-    //TODO: Make PinkMan and AssetManager into smart pointers
-    //TODO: Make PinkMan an entity and abstract it into a class
-    pinkMan = new PinkMan({windowWidth / 2, windowHeight / 2 }, {1, 1});
+void Game::init_game_objects()
+{
+    pinkMan = new PinkMan({WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 }, {1, 1});
     pinkMan->init(assetManager);
 
-    isRunning = true;
+    string terrain_texture_id = "terrain";
+    terrain[GRASS] = new Terrain(true, terrain_texture_id, {48 * 2, 0, 48, 48}, this->assetManager);
+
+    for (int i = 0; i < WINDOW_WIDTH / 48; i++)
+    {
+        tiles.push_back(Tile({i * 48 + 8, WINDOW_HEIGHT - 48, 48, 48}, terrain[GRASS]));
+    }
 }
 
 /*
@@ -158,6 +174,10 @@ void Game::render()
 
 
     pinkMan->render();
+    for (auto& tile : tiles)
+    {
+        tile.render();
+    }
 
     SDL_RenderPresent(GraphicsManager::get_renderer());
 }
