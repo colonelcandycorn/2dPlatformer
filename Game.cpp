@@ -151,7 +151,7 @@ void Game::update()
 
     while (lag >= MILLISECONDS_PER_FRAME)
     {
-        pinkMan->update(MILLISECONDS_PER_FRAME);
+        pinkMan->update(MILLISECONDS_PER_FRAME, tiles);
         lag -= MILLISECONDS_PER_FRAME;
     }
 
@@ -193,7 +193,20 @@ void Game::render()
 void Game::take_down()
 {
     delete pinkMan;
+    pinkMan = nullptr;
+
+    for (auto& t : terrain)
+    {
+        delete t;
+        t = nullptr;
+    }
+    tiles.clear();
+
+    assetManager->clear_assets();
     delete assetManager;
+    assetManager = nullptr;
+
+
     GraphicsManager::release();
     SDL_Quit();
 }

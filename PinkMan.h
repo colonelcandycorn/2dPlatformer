@@ -3,6 +3,7 @@
 #define PINKMAN_H
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
+#include <vector>
 
 /*
  * texture_type is an enum that represents the different textures that PinkMan can have.
@@ -20,6 +21,7 @@ const int TEXT_COUNT = 4;
 const int GRAVITY = 83;
 const int JUMP_VELOCITY = -1000 ;
 
+
 const int IDLE_FRAMES = 11;
 const int RUNNING_FRAMES = 12;
 const int PINKMAN_WIDTH = 32;
@@ -30,6 +32,7 @@ const int FALLING_FRAMES = 1;
 
 class AssetManager;
 class PinkManState;
+class Tile;
 
 class PinkMan {
 public:
@@ -37,7 +40,7 @@ public:
     ~PinkMan();
 
     void init(AssetManager* asset_manager);
-    void update(Uint64 deltaTime);
+    void update(Uint64 deltaTime, std::vector<Tile> collision_tiles);
     void render();
 
     void process_input(SDL_Event event);

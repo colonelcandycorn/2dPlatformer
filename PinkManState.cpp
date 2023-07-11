@@ -75,7 +75,6 @@ void PinkManRightRunningState::update(PinkMan &hero, Uint64 deltaTime)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
 
-    hero.update_position(deltaTime);
 }
 
 PinkManState* PinkManRightRunningState::process_input(PinkMan& hero, SDL_Event event)
@@ -150,7 +149,6 @@ void PinkManLeftRunningState::update(PinkMan &hero, Uint64 deltaTime)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
 
-    hero.update_position(deltaTime);
 }
 
 void PinkManLeftRunningState::enter(PinkMan &hero)
@@ -195,7 +193,6 @@ void PinkManJumpingState::update(PinkMan &hero, Uint64 deltaTime)
     if (hero.get_velocity().y > 0)
         hero.update_state(new PinkManFallingState());
 
-    hero.update_position(deltaTime);
 }
 
 void PinkManJumpingState::enter(PinkMan &hero)
@@ -236,10 +233,6 @@ void PinkManFallingState::update(PinkMan &hero, Uint64 deltaTime)
 {
     hero.get_velocity().y += GRAVITY;
 
-    if (hero.get_velocity().y > 1000)
-        hero.update_state(new PinkManIdleState());
-
-    hero.update_position(deltaTime);
 }
 
 void PinkManFallingState::enter(PinkMan &hero)

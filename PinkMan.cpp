@@ -3,6 +3,8 @@
 #include "GraphicsManager.h"
 #include "PinkManState.h"
 #include <iostream>
+#include "ColliderManager.h"
+#include "Tile.h"
 
 PinkMan::PinkMan(glm::vec2 position, glm::vec2 scale) :
     position(position),
@@ -34,9 +36,27 @@ void PinkMan::init(AssetManager* asset_manager) {
 
 }
 
-void PinkMan::update(Uint64 deltaTime) {
+void PinkMan::update(Uint64 deltaTime, std::vector<Tile> tiles) {
 
     state->update(*this, deltaTime);
+
+    for (auto& tile : tiles)
+    {
+        if (tile.is_solid())
+        {
+            ColliderManager::rect_collision(destRect, velocity, tile.get_dest_rect(), deltaTime);
+        }
+    }
+
+    if (this->velocity.y == 0 && current_texture == FALLING)
+    {
+        if (this->velocity.x == 0)
+        {
+            update_state(new PinkManIdleState());
+        }
+    }
+    update_position(deltaTime);
+
 }
 
 void PinkMan::render() {
@@ -83,6 +103,7 @@ void PinkMan::update_state(PinkManState *a_state)
 
 void PinkMan::update_position(Uint64 deltaTime)
 {
+
     position.x += velocity.x * deltaTime / 1000;
     position.y += velocity.y * deltaTime / 1000;
 

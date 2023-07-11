@@ -9,7 +9,7 @@ COBJS = main.o \
 		PinkManState.o \
 		Terrain.o \
 		Tile.o \
-		ColliderManager.o \
+		ColliderManager.o
 INCLUDE_PATH = -I"./libs/"
 TARGETS = main
 LFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
