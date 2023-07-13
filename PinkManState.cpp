@@ -13,6 +13,8 @@
  */
 void PinkManState::update_(PinkMan &hero, Uint64 deltaTime, int frames)
 {
+    hero.get_velocity().y += GRAVITY;
+
     static int time_since_last_frame = 0;
 
     time_since_last_frame += deltaTime;

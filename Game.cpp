@@ -151,6 +151,7 @@ void Game::update()
 
     while (lag >= MILLISECONDS_PER_FRAME)
     {
+
         pinkMan->update(MILLISECONDS_PER_FRAME, tiles);
         lag -= MILLISECONDS_PER_FRAME;
     }

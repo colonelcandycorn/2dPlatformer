@@ -18,7 +18,7 @@ enum texture_type {
 };
 
 const int TEXT_COUNT = 4;
-const int GRAVITY = 83;
+const int GRAVITY = 64;
 const int JUMP_VELOCITY = -1000 ;
 
 

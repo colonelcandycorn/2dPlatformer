@@ -12,7 +12,7 @@ public:
 
     void render() const;
     [[nodiscard]] bool is_solid() const;
-    [[nodiscard]] SDL_Rect get_dest_rect() const;
+    [[nodiscard]] SDL_Rect get_dest_rect();
 
 private:
     SDL_Rect dest_rect;

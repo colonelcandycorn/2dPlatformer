@@ -19,7 +19,7 @@ bool Tile::is_solid() const
     return terrain->is_solid();
 }
 
-SDL_Rect Tile::get_dest_rect() const
+SDL_Rect Tile::get_dest_rect()
 {
     return dest_rect;
 }

@@ -11,8 +11,7 @@
 
 class ColliderManager {
 public:
-    static void rect_collision(SDL_Rect src, glm::vec2& src_vel, SDL_Rect dest, Uint64 delta_time);
-private:
+    static bool rect_collision(SDL_Rect src, glm::vec2& src_vel, SDL_Rect dest, Uint64 delta_time, float& time_to_collision, glm::vec2& contact_normal);
     static bool ray_vs_rect(glm::vec2 ray_origin, glm::vec2 ray_dir, SDL_Rect rect, glm::vec2 &contact_point, glm::vec2 &contact_normal, float &t_hit_near);
     static void resolve_collision(glm::vec2 &vel, glm::vec2 contact_normal, float t_hit_near);
 

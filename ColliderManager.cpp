@@ -3,8 +3,9 @@
 //
 
 #include "ColliderManager.h"
+#include <iostream>
 
-void ColliderManager::rect_collision(SDL_Rect src, glm::vec2 &src_vel, SDL_Rect dest, Uint64 delta_time)
+bool ColliderManager::rect_collision(SDL_Rect src, glm::vec2 &src_vel, SDL_Rect dest, Uint64 delta_time, float& time_to_collision, glm::vec2& contact_normal)
 {
     glm::vec2 src_pos = {src.x + (src.w / 2), src.y + (src.h / 2)};
 
@@ -18,16 +19,20 @@ void ColliderManager::rect_collision(SDL_Rect src, glm::vec2 &src_vel, SDL_Rect 
     dest_scaled.y -= src.h / 2;
 
 
-    glm::vec2 contact_point;
-    glm::vec2 contact_normal;
-    float t_hit_near = 0.0f;
+    glm::vec2 contact_point = {0.0f, 0.0f};
 
-    if (ray_vs_rect(src_pos, src_vel_scaled, dest_scaled, contact_point, contact_normal, t_hit_near))
-    {
-        if ((t_hit_near >= 0.0f && t_hit_near < 1.0f))
-            resolve_collision(src_vel, contact_normal, t_hit_near);
+    if (src_vel.x == 0.0f && src_vel.y == 0.0f) {
+        return false;
     }
 
+    if (ray_vs_rect(src_pos, src_vel_scaled, dest_scaled, contact_point, contact_normal, time_to_collision))
+    {
+        if ((time_to_collision >= 0.0f && time_to_collision < 1.0f)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool ColliderManager::ray_vs_rect(glm::vec2 ray_origin, glm::vec2 ray_dir, SDL_Rect rect, glm::vec2 &contact_point,
@@ -36,8 +41,20 @@ bool ColliderManager::ray_vs_rect(glm::vec2 ray_origin, glm::vec2 ray_dir, SDL_R
     glm::vec2 rec_pos = {rect.x, rect.y};
     glm::vec2 rec_dim = {rect.w, rect.h};
 
-    glm::vec2 t_near = (rec_pos - ray_origin) / ray_dir;
-    glm::vec2 t_far = (rec_pos + rec_dim - ray_origin) / ray_dir;
+    glm::vec2 inv_dir = 1.0f / ray_dir;
+
+    glm::vec2 t_near = (rec_pos - ray_origin) * inv_dir;
+    glm::vec2 t_far = (rec_pos + rec_dim - ray_origin) * inv_dir;
+
+    if (std::isnan(t_far.y) || std::isnan(t_far.x))
+    {
+        return false;
+    }
+
+    if (std::isnan(t_near.y) || std::isnan(t_near.x))
+    {
+        return false;
+    }
 
     if (t_near.x > t_far.x)
     {
@@ -67,11 +84,11 @@ bool ColliderManager::ray_vs_rect(glm::vec2 ray_origin, glm::vec2 ray_dir, SDL_R
 
     if (t_near.x > t_near.y)
     {
-        contact_normal = ray_dir.x < 0 ? glm::vec2{1, 0} : glm::vec2{-1, 0};
+        contact_normal = inv_dir.x < 0 ? glm::vec2{1, 0} : glm::vec2{-1, 0};
     }
     else if (t_near.x < t_near.y)
     {
-        contact_normal = ray_dir.y < 0 ? glm::vec2{0, 1} : glm::vec2{0, -1};
+        contact_normal = inv_dir.y < 0 ? glm::vec2{0, 1} : glm::vec2{0, -1};
     }
 
     return true;
@@ -80,5 +97,7 @@ bool ColliderManager::ray_vs_rect(glm::vec2 ray_origin, glm::vec2 ray_dir, SDL_R
 void ColliderManager::resolve_collision(glm::vec2 &vel, glm::vec2 contact_normal, float t_hit_near)
 {
     glm::vec2 abs_vel = {std::abs(vel.x), std::abs(vel.y)};
-    vel += contact_normal * abs_vel * (1.0f - t_hit_near);
+
+    glm::vec2 temp = contact_normal * abs_vel * (1.0f - t_hit_near);
+    vel += temp;
 }
