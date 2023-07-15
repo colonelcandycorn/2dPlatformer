@@ -4,13 +4,22 @@
 
 #include "PinkManState.h"
 #include "PinkMan.h"
+#include "ColliderManager.h"
+#include "Tile.h"
 #include <iostream>
+#include <algorithm>
+
+
 
 /*
  ****************************************************************************************
  * PinkManState
  * **************************************************************************************
  */
+PinkManState::PinkManState() : is_keyup_event(false) {}
+
+PinkManState::PinkManState(bool is_keyup_event) : is_keyup_event(is_keyup_event) {}
+
 void PinkManState::update_(PinkMan &hero, Uint64 deltaTime, int frames)
 {
     hero.get_velocity().y += GRAVITY;
@@ -26,8 +35,48 @@ void PinkManState::update_(PinkMan &hero, Uint64 deltaTime, int frames)
             hero.get_src_rect().x = 0;
         }
     }
+
+
 }
 
+
+void PinkManState::collide_(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+{
+    std::vector<std::pair<float, Tile*>> colliders;
+    float time_to_collision = 0;
+    glm::vec2 normal = glm::vec2(0, 0);
+
+    for (auto& tile : tiles)
+    {
+        normal = glm::vec2(0, 0);
+
+        if (tile.is_solid())
+        {
+            if (ColliderManager::rect_collision(hero.get_dest_rect(), hero.get_velocity(), tile.get_dest_rect(), deltaTime, time_to_collision, normal))
+            {
+                colliders.emplace_back(std::make_pair(time_to_collision, &tile));
+            }
+        }
+    }
+
+    normal = glm::vec2(0, 0);
+
+    std::sort(colliders.begin(), colliders.end(), [](std::pair<float, Tile*> a, std::pair<float, Tile*> b) {
+        return a.first < b.first;
+    });
+
+    for (auto& collider : colliders)
+    {
+        if (ColliderManager::rect_collision(hero.get_dest_rect(), hero.get_velocity(), collider.second->get_dest_rect(), deltaTime, time_to_collision, normal))
+        {
+            ColliderManager::resolve_collision(hero.get_velocity(), normal, time_to_collision);
+            normal = glm::vec2(0, 0);
+        }
+    }
+
+    if (hero.get_velocity().y > 0)
+        hero.update_state(new PinkManFallingState(is_keyup_event));
+}
 /*
  ****************************************************************************************
  * PinkManIdleState
@@ -35,9 +84,10 @@ void PinkManState::update_(PinkMan &hero, Uint64 deltaTime, int frames)
  */
 PinkManIdleState::~PinkManIdleState() = default;
 
-void PinkManIdleState::update(PinkMan& hero, Uint64 deltaTime)
+void PinkManIdleState::update(PinkMan& hero, Uint64 deltaTime, vector<Tile> &tiles)
 {
     PinkManState::update_(hero, deltaTime, IDLE_FRAMES);
+    PinkManState::collide_(hero, deltaTime, tiles);
 }
 
 PinkManState* PinkManIdleState::process_input(PinkMan &hero, SDL_Event event)
@@ -73,10 +123,10 @@ void PinkManIdleState::enter(PinkMan &hero)
 
 PinkManRightRunningState::~PinkManRightRunningState() = default;
 
-void PinkManRightRunningState::update(PinkMan &hero, Uint64 deltaTime)
+void PinkManRightRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
-
+    PinkManState::collide_(hero, deltaTime, tiles);
 }
 
 PinkManState* PinkManRightRunningState::process_input(PinkMan& hero, SDL_Event event)
@@ -86,7 +136,7 @@ PinkManState* PinkManRightRunningState::process_input(PinkMan& hero, SDL_Event e
             case SDLK_LEFT:
                 return new PinkManLeftRunningState();
             case SDLK_RIGHT:
-                hero.get_velocity().x = 170;
+                hero.get_velocity().x = RUNNING_VELOCITY;
                 break;
             case SDLK_SPACE:
                 return new PinkManJumpingState();
@@ -126,7 +176,7 @@ PinkManState* PinkManLeftRunningState::process_input(PinkMan &hero, SDL_Event ev
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
             case SDLK_LEFT:
-                hero.get_velocity().x = -170;
+                hero.get_velocity().x = -RUNNING_VELOCITY;
                 break;
             case SDLK_RIGHT:
                 return new PinkManRightRunningState();
@@ -147,10 +197,10 @@ PinkManState* PinkManLeftRunningState::process_input(PinkMan &hero, SDL_Event ev
     return nullptr;
 }
 
-void PinkManLeftRunningState::update(PinkMan &hero, Uint64 deltaTime)
+void PinkManLeftRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
-
+    PinkManState::collide_(hero, deltaTime, tiles);
 }
 
 void PinkManLeftRunningState::enter(PinkMan &hero)
@@ -174,12 +224,26 @@ PinkManState* PinkManJumpingState::process_input(PinkMan &hero, SDL_Event event)
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
             case SDLK_LEFT:
-               // hero.get_velocity().x = -85;
+               hero.get_velocity().x = -JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_HORIZONTAL);
                 break;
             case SDLK_RIGHT:
-                //hero.get_velocity().x = 85;
+                hero.get_velocity().x = JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_NONE);
+                break;
+            default:
+                break;
+        }
+    }
+    else if (event.type == SDL_KEYUP) {
+        switch (event.key.keysym.sym) {
+            case SDLK_LEFT:
+                hero.get_velocity().x = -JUMP_VELOCITY_X;
+                is_keyup_event = true;
+                break;
+            case SDLK_RIGHT:
+                hero.get_velocity().x = JUMP_VELOCITY_X;
+                is_keyup_event = true;
                 break;
             default:
                 break;
@@ -188,12 +252,12 @@ PinkManState* PinkManJumpingState::process_input(PinkMan &hero, SDL_Event event)
     return nullptr;
 }
 
-void PinkManJumpingState::update(PinkMan &hero, Uint64 deltaTime)
+void PinkManJumpingState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
 {
-    hero.get_velocity().y += GRAVITY;
+    PinkManState::update_(hero, deltaTime, JUMPING_FRAMES);
 
-    if (hero.get_velocity().y > 0)
-        hero.update_state(new PinkManFallingState());
+    PinkManState::collide_(hero, deltaTime, tiles);
+
 
 }
 
@@ -202,6 +266,7 @@ void PinkManJumpingState::enter(PinkMan &hero)
     hero.update_texture(JUMPING);
     hero.get_src_rect().x = 0;
     hero.get_velocity().y = JUMP_VELOCITY;
+    is_keyup_event = false;
 }
 
 /*
@@ -210,6 +275,13 @@ void PinkManJumpingState::enter(PinkMan &hero)
  * **************************************************************************************
  */
 
+PinkManFallingState::PinkManFallingState(bool is_keyup_event)
+    : PinkManState(is_keyup_event)
+{
+}
+
+
+
 PinkManFallingState::~PinkManFallingState() = default;
 
 PinkManState* PinkManFallingState::process_input(PinkMan &hero, SDL_Event event)
@@ -217,12 +289,26 @@ PinkManState* PinkManFallingState::process_input(PinkMan &hero, SDL_Event event)
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
             case SDLK_LEFT:
-                //hero.get_velocity().x = -85;
+                hero.get_velocity().x = -JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_HORIZONTAL);
                 break;
             case SDLK_RIGHT:
-                //hero.get_velocity().x = 85;
+                hero.get_velocity().x = JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_NONE);
+                break;
+            default:
+                break;
+        }
+    }
+    else if (event.type == SDL_KEYUP) {
+        switch (event.key.keysym.sym) {
+            case SDLK_LEFT:
+                hero.get_velocity().x = -JUMP_VELOCITY_X;
+                is_keyup_event = true;
+                break;
+            case SDLK_RIGHT:
+                hero.get_velocity().x = JUMP_VELOCITY_X;
+                is_keyup_event = true;
                 break;
             default:
                 break;
@@ -231,11 +317,22 @@ PinkManState* PinkManFallingState::process_input(PinkMan &hero, SDL_Event event)
     return nullptr;
 }
 
-void PinkManFallingState::update(PinkMan &hero, Uint64 deltaTime)
+void PinkManFallingState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
 {
-    hero.get_velocity().y += GRAVITY;
+    PinkManState::update_(hero, deltaTime, FALLING_FRAMES);
+    PinkManState::collide_(hero, deltaTime, tiles);
 
+    if (hero.get_velocity().y == 0 && (hero.get_velocity().x == 0 || is_keyup_event)) {
+        hero.update_state(new PinkManIdleState());
+    }
+    else if (hero.get_velocity().y == 0 && hero.get_flip_flag() == SDL_FLIP_NONE) {
+        hero.update_state(new PinkManRightRunningState());
+    }
+    else if (hero.get_velocity().y == 0 && hero.get_flip_flag() == SDL_FLIP_HORIZONTAL) {
+        hero.update_state(new PinkManLeftRunningState());
+    }
 }
+
 
 void PinkManFallingState::enter(PinkMan &hero)
 {

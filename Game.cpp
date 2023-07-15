@@ -68,7 +68,10 @@ void Game::init_game_objects()
     {
         tiles.push_back(Tile({i * 48 + 8, WINDOW_HEIGHT - 48, 48, 48}, terrain[GRASS]));
     }
+
+    tiles.push_back(Tile({WINDOW_WIDTH / 2, WINDOW_HEIGHT - 48 * 3, 48, 48}, terrain[GRASS]));
 }
+
 
 /*
  * run()

@@ -19,7 +19,9 @@ enum texture_type {
 
 const int TEXT_COUNT = 4;
 const int GRAVITY = 64;
-const int JUMP_VELOCITY = -1000 ;
+const int JUMP_VELOCITY = -800;
+const int JUMP_VELOCITY_X = 100;
+const int RUNNING_VELOCITY = 170;
 
 
 const int IDLE_FRAMES = 11;
@@ -52,6 +54,7 @@ public:
     void set_flip_flag(SDL_RendererFlip flag);
     void update_texture(texture_type type);
     void update_state(PinkManState* state);
+    SDL_RendererFlip& get_flip_flag();
 
 private:
 
