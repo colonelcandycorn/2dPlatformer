@@ -5,6 +5,8 @@
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
+const int LEVEL_WIDTH = 1280;
+const int LEVEL_HEIGHT = 960;
 
 class GraphicsManager {
 public:

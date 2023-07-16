@@ -10,7 +10,7 @@ public:
     Tile(SDL_Rect dest, Terrain* terrain);
     ~Tile()=default;
 
-    void render() const;
+    void render(int camera_x, int camera_y) const;
     [[nodiscard]] bool is_solid() const;
     [[nodiscard]] SDL_Rect get_dest_rect();
 

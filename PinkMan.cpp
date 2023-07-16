@@ -2,7 +2,6 @@
 #include "AssetManager.h"
 #include "GraphicsManager.h"
 #include "PinkManState.h"
-#include <iostream>
 #include "ColliderManager.h"
 #include "Tile.h"
 #include <map>
@@ -46,11 +45,15 @@ void PinkMan::update(Uint64 deltaTime, std::vector<Tile> tiles) {
 
 }
 
-void PinkMan::render() {
+void PinkMan::render(int camera_x, int camera_y) {
+    SDL_Rect temp = destRect;
+    temp.x -= camera_x;
+    temp.y -= camera_y;
+
     SDL_RenderCopyEx(GraphicsManager::get_renderer(),
                      textures[current_texture],
                      &srcRect,
-                     &destRect,
+                     &temp,
                      0,
                      nullptr,
                      flip_flag);

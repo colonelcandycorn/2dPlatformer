@@ -5,7 +5,8 @@ Game::Game() :
     isRunning(false),
     millisecondsPreviousFrame(0),
     pinkMan(nullptr),
-    assetManager(nullptr)
+    assetManager(nullptr),
+    camera({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT})
 {
 }
 
@@ -156,6 +157,7 @@ void Game::update()
     {
 
         pinkMan->update(MILLISECONDS_PER_FRAME, tiles);
+        update_camera();
         lag -= MILLISECONDS_PER_FRAME;
     }
 
@@ -177,10 +179,10 @@ void Game::render()
     SDL_RenderClear(GraphicsManager::get_renderer());
 
 
-    pinkMan->render();
+    pinkMan->render(camera.x, camera.y);
     for (auto& tile : tiles)
     {
-        tile.render();
+        tile.render(camera.x, camera.y);
     }
 
     SDL_RenderPresent(GraphicsManager::get_renderer());
@@ -213,4 +215,22 @@ void Game::take_down()
 
     GraphicsManager::release();
     SDL_Quit();
+}
+
+void Game::update_camera()
+{
+    camera.x = pinkMan->get_dest_rect().x - (WINDOW_WIDTH / 2);
+    camera.y = pinkMan->get_dest_rect().y - (WINDOW_HEIGHT / 2);
+
+    if (camera.x < 0)
+    {
+        camera.x = 0;
+    }
+
+    if (camera.y < 0)
+    {
+        camera.y = 0;
+    }
+
+
 }

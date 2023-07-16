@@ -43,7 +43,7 @@ public:
 
     void init(AssetManager* asset_manager);
     void update(Uint64 deltaTime, std::vector<Tile> collision_tiles);
-    void render();
+    void render(int camera_x, int camera_y);
 
     void process_input(SDL_Event event);
     void update_position(Uint64 deltaTime);

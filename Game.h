@@ -35,9 +35,12 @@ private:
     PinkMan* pinkMan;
     AssetManager* assetManager;
     Terrain* terrain[TERRAIN_TYPE_COUNT];
+    SDL_Rect camera;
 
     //TODO: Move Map to its own class
     vector<Tile> tiles;
+
+    void update_camera();
 
 public:
     //Constructors, Destructors, and Assignment Operators

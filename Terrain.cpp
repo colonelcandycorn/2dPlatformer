@@ -17,12 +17,17 @@ bool Terrain::is_solid() const {
     return solid;
 }
 
-void Terrain::render(SDL_Rect dest_rect) const
+void Terrain::render(SDL_Rect dest_rect, int camera_x, int camera_y) const
 {
+    SDL_Rect temp = dest_rect;
+
+    temp.x -= camera_x;
+    temp.y -= camera_y;
+
     SDL_RenderCopyEx(GraphicsManager::get_renderer(),
                      asset_manager->get_texture(asset_id),
                      &src_rect,
-                     &dest_rect,
+                     &temp,
                      0,
                      nullptr,
                      SDL_FLIP_NONE);
