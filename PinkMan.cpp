@@ -3,7 +3,7 @@
 #include "GraphicsManager.h"
 #include "PinkManState.h"
 #include "ColliderManager.h"
-#include "Tile.h"
+#include "My_Tile.h"
 #include <map>
 
 
@@ -37,7 +37,7 @@ void PinkMan::init(AssetManager* asset_manager) {
 
 }
 
-void PinkMan::update(Uint64 deltaTime, std::vector<Tile> tiles) {
+void PinkMan::update(Uint64 deltaTime, std::vector<std::vector<My_Tile>> tiles) {
 
     state->update(*this, deltaTime, tiles);
 

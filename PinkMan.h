@@ -34,7 +34,7 @@ const int FALLING_FRAMES = 1;
 
 class AssetManager;
 class PinkManState;
-class Tile;
+class My_Tile;
 
 class PinkMan {
 public:
@@ -42,7 +42,7 @@ public:
     ~PinkMan();
 
     void init(AssetManager* asset_manager);
-    void update(Uint64 deltaTime, std::vector<Tile> collision_tiles);
+    void update(Uint64 deltaTime, std::vector<std::vector<My_Tile>> collision_tiles);
     void render(int camera_x, int camera_y);
 
     void process_input(SDL_Event event);

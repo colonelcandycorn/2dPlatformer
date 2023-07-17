@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <iostream>
 
+
 Game::Game() :
     isRunning(false),
     millisecondsPreviousFrame(0),
@@ -36,10 +37,66 @@ void Game::init()
     }
 
 
+    map.load("assets/tiled/test.tmx");
+    tilesets = map.getTilesets();
 
-    // TODO: Separate this into a function or read from a file to load all assets
+    cout << "Height: " << map.getBounds().height << endl;
+    cout << "Width: " << map.getBounds().width << endl;
+
     assetManager = new AssetManager();
     load_assets();
+
+    for (auto& tileset : tilesets)
+    {
+        cout << "Tileset name: " << tileset.getName() << endl;
+        string path = (string) tileset.getImagePath();
+        string name = (string) tileset.getName();
+        assetManager->add_texture(name, path);
+
+        for (auto tile : tileset.getTiles())
+        {
+            tmx::Vector2 a_pos = tile.imagePosition;
+            tmx::Vector2 a_size = tile.imageSize;
+            SDL_Rect src_rect = {(int) a_pos.x,
+                                 (int) a_pos.y,
+                                 (int)a_size.x,
+                                 (int)a_size.y};
+
+            bool solid = (bool) tile.properties.front().getBoolValue();
+            cout << "Solid: " << solid << endl;
+            terrains.emplace_back(solid,
+                                  name,
+                                  src_rect,
+                                  assetManager);
+        }
+    }
+
+    tiles.resize(map.getTileCount().y);
+    for (auto& layer : map.getLayers()) {
+        if (layer->getType() == tmx::Layer::Type::Tile) {
+            auto &tileLayer = layer->getLayerAs<tmx::TileLayer>();
+            auto &some_tiles = tileLayer.getTiles();
+            int tile_size_x = map.getTileSize().x;
+            int tile_size_y = map.getTileSize().y;
+
+            for (int i = 0; i < (int) some_tiles.size(); i++) {
+                if (some_tiles[i].ID != 0) {
+                    int x_offset = (int) i % map.getTileCount().x * tile_size_x;
+                    int y_offset = (int) i / map.getTileCount().x * tile_size_y;
+
+
+                    SDL_Rect dest_rect = {x_offset,
+                                          y_offset,
+                                          tile_size_x,
+                                          tile_size_y};
+
+                    tiles[i / map.getTileCount().x].emplace_back(dest_rect, &terrains[some_tiles[i].ID - 1]);
+                }
+            }
+        }
+    }
+
+    // TODO: Separate this into a function or read from a file to load all assets
 
     //TODO: Make PinkMan and AssetManager into smart pointers
     //TODO: Make PinkMan an entity and abstract it into a class
@@ -54,23 +111,14 @@ void Game::load_assets()
     assetManager->add_texture("pink_running","assets/Free/characters/pink_man/running.png");
     assetManager->add_texture("pink_jumping", "assets/Free/characters/pink_man/jump.png");
     assetManager->add_texture("pink_falling", "assets/Free/characters/pink_man/fall.png");
-    assetManager->add_texture("terrain", "assets/Free/Terrain/terrain.png");
+
 }
 
 void Game::init_game_objects()
 {
-    pinkMan = new PinkMan({WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 }, {1, 1});
+    pinkMan = new PinkMan({64, 64}, {1, 1});
     pinkMan->init(assetManager);
 
-    string terrain_texture_id = "terrain";
-    terrain[GRASS] = new Terrain(true, terrain_texture_id, {48 * 2, 0, 48, 48}, this->assetManager);
-
-    for (int i = 0; i < WINDOW_WIDTH / 48; i++)
-    {
-        tiles.push_back(Tile({i * 48 + 8, WINDOW_HEIGHT - 48, 48, 48}, terrain[GRASS]));
-    }
-
-    tiles.push_back(Tile({WINDOW_WIDTH / 2, WINDOW_HEIGHT - 48 * 3, 48, 48}, terrain[GRASS]));
 }
 
 
@@ -180,10 +228,15 @@ void Game::render()
 
 
     pinkMan->render(camera.x, camera.y);
-    for (auto& tile : tiles)
+
+    for (auto& tile_row : tiles)
     {
-        tile.render(camera.x, camera.y);
+        for (auto& tile : tile_row)
+        {
+            tile.render(camera.x, camera.y);
+        }
     }
+
 
     SDL_RenderPresent(GraphicsManager::get_renderer());
 }
@@ -201,13 +254,7 @@ void Game::take_down()
     delete pinkMan;
     pinkMan = nullptr;
 
-    for (auto& t : terrain)
-    {
-        delete t;
-        t = nullptr;
-    }
     tiles.clear();
-
     assetManager->clear_assets();
     delete assetManager;
     assetManager = nullptr;
@@ -230,6 +277,17 @@ void Game::update_camera()
     if (camera.y < 0)
     {
         camera.y = 0;
+    }
+
+    // if camera is greater than the width of the map minus the width of the window
+    if (camera.y + WINDOW_HEIGHT > LEVEL_HEIGHT)
+    {
+        camera.y = LEVEL_HEIGHT - WINDOW_HEIGHT;
+    }
+
+    if (camera.x + WINDOW_WIDTH > LEVEL_WIDTH)
+    {
+        camera.x = LEVEL_WIDTH - WINDOW_WIDTH;
     }
 
 

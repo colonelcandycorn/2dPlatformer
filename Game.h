@@ -12,7 +12,11 @@
 #include "Terrain.h"
 #include <string>
 #include <vector>
-#include "Tile.h"
+#include <tmxlite/Map.hpp>
+#include <tmxlite/TileLayer.hpp>
+#include <tmxlite/Tileset.hpp>
+#include <tmxlite/Types.hpp>
+#include "My_Tile.h"
 
 using namespace std;
 
@@ -34,11 +38,14 @@ private:
     Uint64 millisecondsPreviousFrame;
     PinkMan* pinkMan;
     AssetManager* assetManager;
-    Terrain* terrain[TERRAIN_TYPE_COUNT];
     SDL_Rect camera;
+    vector<vector<My_Tile>> tiles;
 
     //TODO: Move Map to its own class
-    vector<Tile> tiles;
+    tmx::Map map;
+    vector<tmx::Tileset> tilesets;
+    vector<Terrain> terrains;
+
 
     void update_camera();
 

@@ -9,7 +9,7 @@ class AssetManager;
 class Terrain {
 public:
     Terrain(bool solid,
-            std::string& a_id,
+            const std::string& a_id,
             SDL_Rect a_rect,
             AssetManager* asset_manager);
     ~Terrain()=default;
@@ -20,7 +20,7 @@ public:
 
 private:
     bool solid;
-    std::string asset_id;
+    const std::string asset_id;
     SDL_Rect src_rect;
     AssetManager* asset_manager;
 

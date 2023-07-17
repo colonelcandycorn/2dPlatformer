@@ -5,7 +5,7 @@
 #include "PinkManState.h"
 #include "PinkMan.h"
 #include "ColliderManager.h"
-#include "Tile.h"
+#include "My_Tile.h"
 #include <iostream>
 #include <algorithm>
 
@@ -40,28 +40,28 @@ void PinkManState::update_(PinkMan &hero, Uint64 deltaTime, int frames)
 }
 
 
-void PinkManState::collide_(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManState::collide_(PinkMan &hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
-    std::vector<std::pair<float, Tile*>> colliders;
+    std::vector<std::pair<float, My_Tile*>> colliders;
     float time_to_collision = 0;
     glm::vec2 normal = glm::vec2(0, 0);
 
-    for (auto& tile : tiles)
-    {
-        normal = glm::vec2(0, 0);
+    for (auto& tile_row : tiles) {
+        for (auto &tile: tile_row) {
+            normal = glm::vec2(0, 0);
 
-        if (tile.is_solid())
-        {
-            if (ColliderManager::rect_collision(hero.get_dest_rect(), hero.get_velocity(), tile.get_dest_rect(), deltaTime, time_to_collision, normal))
-            {
-                colliders.emplace_back(std::make_pair(time_to_collision, &tile));
+            if (tile.is_solid()) {
+                if (ColliderManager::rect_collision(hero.get_dest_rect(), hero.get_velocity(), tile.get_dest_rect(),
+                                                    deltaTime, time_to_collision, normal)) {
+                    colliders.emplace_back(std::make_pair(time_to_collision, &tile));
+                }
             }
         }
     }
 
     normal = glm::vec2(0, 0);
 
-    std::sort(colliders.begin(), colliders.end(), [](std::pair<float, Tile*> a, std::pair<float, Tile*> b) {
+    std::sort(colliders.begin(), colliders.end(), [](std::pair<float, My_Tile*> a, std::pair<float, My_Tile*> b) {
         return a.first < b.first;
     });
 
@@ -84,7 +84,7 @@ void PinkManState::collide_(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles
  */
 PinkManIdleState::~PinkManIdleState() = default;
 
-void PinkManIdleState::update(PinkMan& hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManIdleState::update(PinkMan& hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
     PinkManState::update_(hero, deltaTime, IDLE_FRAMES);
     PinkManState::collide_(hero, deltaTime, tiles);
@@ -123,7 +123,7 @@ void PinkManIdleState::enter(PinkMan &hero)
 
 PinkManRightRunningState::~PinkManRightRunningState() = default;
 
-void PinkManRightRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManRightRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
     PinkManState::collide_(hero, deltaTime, tiles);
@@ -197,7 +197,7 @@ PinkManState* PinkManLeftRunningState::process_input(PinkMan &hero, SDL_Event ev
     return nullptr;
 }
 
-void PinkManLeftRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManLeftRunningState::update(PinkMan &hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
     PinkManState::update_(hero, deltaTime, RUNNING_FRAMES);
     PinkManState::collide_(hero, deltaTime, tiles);
@@ -252,7 +252,7 @@ PinkManState* PinkManJumpingState::process_input(PinkMan &hero, SDL_Event event)
     return nullptr;
 }
 
-void PinkManJumpingState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManJumpingState::update(PinkMan &hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
     PinkManState::update_(hero, deltaTime, JUMPING_FRAMES);
 
@@ -317,7 +317,7 @@ PinkManState* PinkManFallingState::process_input(PinkMan &hero, SDL_Event event)
     return nullptr;
 }
 
-void PinkManFallingState::update(PinkMan &hero, Uint64 deltaTime, vector<Tile> &tiles)
+void PinkManFallingState::update(PinkMan &hero, Uint64 deltaTime, vector<vector<My_Tile>> &tiles)
 {
     PinkManState::update_(hero, deltaTime, FALLING_FRAMES);
     PinkManState::collide_(hero, deltaTime, tiles);

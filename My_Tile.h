@@ -5,10 +5,10 @@
 
 class Terrain;
 
-class Tile {
+class My_Tile {
 public:
-    Tile(SDL_Rect dest, Terrain* terrain);
-    ~Tile()=default;
+    My_Tile(SDL_Rect dest, Terrain* terrain);
+    ~My_Tile()=default;
 
     void render(int camera_x, int camera_y) const;
     [[nodiscard]] bool is_solid() const;

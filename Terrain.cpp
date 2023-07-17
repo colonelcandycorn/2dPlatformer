@@ -3,7 +3,7 @@
 #include "GraphicsManager.h"
 
 Terrain::Terrain(bool solid,
-                 std::string& a_id,
+                 const std::string& a_id,
                  SDL_Rect a_rect,
                  AssetManager* asset_manager) :
     solid(solid),
@@ -20,7 +20,6 @@ bool Terrain::is_solid() const {
 void Terrain::render(SDL_Rect dest_rect, int camera_x, int camera_y) const
 {
     SDL_Rect temp = dest_rect;
-
     temp.x -= camera_x;
     temp.y -= camera_y;
 
