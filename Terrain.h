@@ -17,6 +17,8 @@ public:
     [[nodiscard]] bool is_solid() const;
     //SDL_Texture* get_texture() const;
     void render(SDL_Rect dest_rect, int camera_x, int camera_y) const;
+    int get_src_x() const;
+    int get_src_y() const;
 
 private:
     bool solid;

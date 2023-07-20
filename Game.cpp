@@ -37,64 +37,10 @@ void Game::init()
     }
 
 
-    map.load("assets/tiled/test.tmx");
-    tilesets = map.getTilesets();
-
-    cout << "Height: " << map.getBounds().height << endl;
-    cout << "Width: " << map.getBounds().width << endl;
-
     assetManager = new AssetManager();
     load_assets();
 
-    for (auto& tileset : tilesets)
-    {
-        cout << "Tileset name: " << tileset.getName() << endl;
-        string path = (string) tileset.getImagePath();
-        string name = (string) tileset.getName();
-        assetManager->add_texture(name, path);
-
-        for (auto tile : tileset.getTiles())
-        {
-            tmx::Vector2 a_pos = tile.imagePosition;
-            tmx::Vector2 a_size = tile.imageSize;
-            SDL_Rect src_rect = {(int) a_pos.x,
-                                 (int) a_pos.y,
-                                 (int)a_size.x,
-                                 (int)a_size.y};
-
-            bool solid = (bool) tile.properties.front().getBoolValue();
-            cout << "Solid: " << solid << endl;
-            terrains.emplace_back(solid,
-                                  name,
-                                  src_rect,
-                                  assetManager);
-        }
-    }
-
-    tiles.resize(map.getTileCount().y);
-    for (auto& layer : map.getLayers()) {
-        if (layer->getType() == tmx::Layer::Type::Tile) {
-            auto &tileLayer = layer->getLayerAs<tmx::TileLayer>();
-            auto &some_tiles = tileLayer.getTiles();
-            int tile_size_x = map.getTileSize().x;
-            int tile_size_y = map.getTileSize().y;
-
-            for (int i = 0; i < (int) some_tiles.size(); i++) {
-                if (some_tiles[i].ID != 0) {
-                    int x_offset = (int) i % map.getTileCount().x * tile_size_x;
-                    int y_offset = (int) i / map.getTileCount().x * tile_size_y;
-
-
-                    SDL_Rect dest_rect = {x_offset,
-                                          y_offset,
-                                          tile_size_x,
-                                          tile_size_y};
-
-                    tiles[i / map.getTileCount().x].emplace_back(dest_rect, &terrains[some_tiles[i].ID - 1]);
-                }
-            }
-        }
-    }
+    load_level("assets/tiled/test.tmx");
 
     // TODO: Separate this into a function or read from a file to load all assets
 
@@ -204,7 +150,7 @@ void Game::update()
     while (lag >= MILLISECONDS_PER_FRAME)
     {
 
-        pinkMan->update(MILLISECONDS_PER_FRAME, tiles);
+        pinkMan->update(MILLISECONDS_PER_FRAME, level_tiles);
         update_camera();
         lag -= MILLISECONDS_PER_FRAME;
     }
@@ -227,15 +173,24 @@ void Game::render()
     SDL_RenderClear(GraphicsManager::get_renderer());
 
 
-    pinkMan->render(camera.x, camera.y);
 
-    for (auto& tile_row : tiles)
+    for (auto& tile_row : background_tiles)
     {
         for (auto& tile : tile_row)
         {
             tile.render(camera.x, camera.y);
         }
     }
+
+    for (auto& tile_row : level_tiles)
+    {
+        for (auto& tile : tile_row)
+        {
+            tile.render(camera.x, camera.y);
+        }
+    }
+
+    pinkMan->render(camera.x, camera.y);
 
 
     SDL_RenderPresent(GraphicsManager::get_renderer());
@@ -254,7 +209,7 @@ void Game::take_down()
     delete pinkMan;
     pinkMan = nullptr;
 
-    tiles.clear();
+    level_tiles.clear();
     assetManager->clear_assets();
     delete assetManager;
     assetManager = nullptr;
@@ -291,4 +246,83 @@ void Game::update_camera()
     }
 
 
+}
+
+void Game::load_level(string level_file_path)
+{
+    if (!map.load(level_file_path))
+    {
+        throw runtime_error("Failed to load level file");
+    }
+
+    for (auto& tileset : map.getTilesets())
+    {
+        load_tilesets(tileset);
+    }
+
+    level_tiles.resize(map.getTileCount().y);
+    background_tiles.resize(map.getTileCount().y);
+
+    for (auto& layer : map.getLayers())
+    {
+        if (layer->getName() == "Background")
+        {
+            load_layer(*layer, background_tiles);
+        }
+        else if (layer->getName() == "Level")
+        {
+            load_layer(*layer, level_tiles);
+        }
+    }
+}
+
+void Game::load_tilesets(const tmx::Tileset &tileset)
+{
+    string path = (string) tileset.getImagePath();
+    string name = (string) tileset.getName();
+    assetManager->add_texture(name, path);
+
+    for (auto tile : tileset.getTiles())
+    {
+        tmx::Vector2 a_pos = tile.imagePosition;
+        tmx::Vector2 a_size = tile.imageSize;
+        SDL_Rect src_rect = {(int) a_pos.x,
+                             (int) a_pos.y,
+                             (int) a_size.x,
+                             (int) a_size.y};
+
+        if (!tile.properties.empty())
+        {
+            bool solid = (bool) tile.properties.front().getBoolValue();
+            terrains.emplace_back(solid,
+                                  name,
+                                  src_rect,
+                                  assetManager);
+        }
+    }
+}
+
+void Game::load_layer(tmx::Layer &layer, vector<vector<My_Tile>> &tiles)
+{
+    if (layer.getType() == tmx::Layer::Type::Tile) {
+        auto &tileLayer = layer.getLayerAs<tmx::TileLayer>();
+        auto &some_tiles = tileLayer.getTiles();
+        int tile_size_x = map.getTileSize().x;
+        int tile_size_y = map.getTileSize().y;
+
+        for (int i = 0; i < (int) some_tiles.size(); i++) {
+            if (some_tiles[i].ID != 0) {
+                int x_offset = (int) i % map.getTileCount().x * tile_size_x;
+                int y_offset = (int) i / map.getTileCount().x * tile_size_y;
+
+
+                SDL_Rect dest_rect = {x_offset,
+                                      y_offset,
+                                      tile_size_x,
+                                      tile_size_y};
+
+                tiles[i / map.getTileCount().x].emplace_back(dest_rect, &terrains[some_tiles[i].ID - 1]);
+            }
+        }
+    }
 }

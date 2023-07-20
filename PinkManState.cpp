@@ -291,10 +291,12 @@ PinkManState* PinkManFallingState::process_input(PinkMan &hero, SDL_Event event)
             case SDLK_LEFT:
                 hero.get_velocity().x = -JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_HORIZONTAL);
+                is_keyup_event = false;
                 break;
             case SDLK_RIGHT:
                 hero.get_velocity().x = JUMP_VELOCITY_X;
                 hero.set_flip_flag(SDL_FLIP_NONE);
+                is_keyup_event = false;
                 break;
             default:
                 break;

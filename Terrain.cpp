@@ -31,3 +31,11 @@ void Terrain::render(SDL_Rect dest_rect, int camera_x, int camera_y) const
                      nullptr,
                      SDL_FLIP_NONE);
 }
+
+int Terrain::get_src_x() const {
+    return src_rect.x;
+}
+
+int Terrain::get_src_y() const {
+    return src_rect.y;
+}

@@ -39,7 +39,8 @@ private:
     PinkMan* pinkMan;
     AssetManager* assetManager;
     SDL_Rect camera;
-    vector<vector<My_Tile>> tiles;
+    vector<vector<My_Tile>> background_tiles;
+    vector<vector<My_Tile>> level_tiles;
 
     //TODO: Move Map to its own class
     tmx::Map map;
@@ -62,6 +63,9 @@ public:
     void take_down();
     void load_assets();
     void init_game_objects();
+    void load_level(string level_file_path);
+    void load_tilesets(const tmx::Tileset& tileset);
+    void load_layer(tmx::Layer& layer, vector<vector<My_Tile>>& tiles);
 
     //inside of run()
     void process_input();
